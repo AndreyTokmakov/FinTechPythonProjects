@@ -28,7 +28,7 @@ def print_response(response: Response):
     if HTTPStatus.OK == response.status_code:  # HTTP_OK
         content_type: str = response.headers.get(HTTPHeader.ContentType)
         if content_type and 'application/json' in content_type:
-            print(response.json())
+            print(response.text)
         else:
             print(response.text)
     else:

@@ -6,8 +6,10 @@ stream_url: str = f'{testnet_ws_host}/stream'
 
 
 def on_message(ws, message):
-    data = json.loads(message)
-    print(data)
+    # data = json.loads(message)
+    print('=' * 180)
+    print(message)
+    print('=' * 180)
 
 
 def on_error(ws, error):
@@ -22,7 +24,7 @@ def on_open(ws):
     subscribe_message = {
         "method": "SUBSCRIBE",
         "params": [
-            "btcusdt@aggTrade",
+            # "btcusdt@aggTrade",
             "btcusdt@depth"
         ],
         "id": 1
