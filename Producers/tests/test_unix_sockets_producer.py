@@ -1,17 +1,16 @@
 import json
 import socket
-import textwrap
-import sys
-from http import HTTPStatus
-from typing import Dict, List
+import time
 
 import requests
-from requests import Response
 
+from requests import Response
+from http import HTTPStatus
+from typing import Dict, List
 from Binance.api.api_keys import get_api_key
 from Binance.api.common import HTTPHeader
 
-host, port = '0.0.0.0', 52525
+socket_path: str = "/tmp/unix_socket"
 TESTNET_API_HOST: str = 'https://testnet.binance.vision/api'
 api_key: str = get_api_key()
 
@@ -48,12 +47,29 @@ def send_simple_json():
         'id': 1, 'side': 'BUY', 'quantity': 10, 'action': 'NEW'
     }).encode('utf-8')
 
-    with socket.socket(socket.AF_INET, socket.SOCK_DGRAM) as sock:
-        #  sock.bind(('127.0.0.1', 10000))
-        bytes_send: int = sock.sendto(payload, (host, port))
+    with socket.socket(socket.AF_UNIX, socket.SOCK_STREAM) as client:
+        client.connect(socket_path)
+        client.sendall(payload)
 
-        print(f'{bytes_send} bytes_send')
+
+def connection_test():
+    with socket.socket(socket.AF_UNIX, socket.SOCK_STREAM) as client:
+        client.connect(socket_path)
+        time.sleep(10)
+
+
+def connection_and_send():
+    # message = '0123456789' * 1024 * 10 + "1234"
+    message = "1234"
+    with socket.socket(socket.AF_UNIX, socket.SOCK_STREAM) as client:
+        client.connect(socket_path)
+        for i in range(3):
+            client.sendall(message.encode())
+            time.sleep(1)
+
+    time.sleep(0.05)
 
 
 if __name__ == '__main__':
-    print(1)
+    # connection_test()
+    connection_and_send()
