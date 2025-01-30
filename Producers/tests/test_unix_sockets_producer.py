@@ -52,22 +52,14 @@ def send_simple_json():
         client.sendall(payload)
 
 
-def connection_test():
+def connection_and_send(symbol: str = 'BTCUSDT',
+                        limit: int = 10000):
+    depth: Dict = get_depth(symbol=symbol, limit=limit)
+    payload: bytes = json.dumps({'data': depth, 's': symbol, 't': 2}).encode('utf-8')
     with socket.socket(socket.AF_UNIX, socket.SOCK_STREAM) as client:
         client.connect(socket_path)
-        time.sleep(10)
-
-
-def connection_and_send():
-    # message = '0123456789' * 1024 * 10 + "1234"
-    message = "1234"
-    with socket.socket(socket.AF_UNIX, socket.SOCK_STREAM) as client:
-        client.connect(socket_path)
-        for i in range(3):
-            client.sendall(message.encode())
-            time.sleep(1)
-
-    time.sleep(0.05)
+        client.sendall(payload)
+        time.sleep(0.01)
 
 
 if __name__ == '__main__':
