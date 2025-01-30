@@ -22,12 +22,12 @@ def on_open(ws):
     subscribe_message = {
         "method": "SUBSCRIBE",
         "params": [
-            # "btcusdt@miniTicker",
+            "btcusdt@miniTicker",
             # "btcusdt@bookTicker",
             # "btcusdt@ticker",
             # "btcusdt@depth@100ms",
             # "btcusdt@depth@1000ms",
-            "btcusdt@aggTrade",
+            # "btcusdt@aggTrade",
             # "btcusdt@trade"
             # "btcusdt@kline_1000ms"
         ],

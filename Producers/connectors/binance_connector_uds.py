@@ -62,9 +62,12 @@ class API(object):
 
 
 class BinanceConnector(object):
+
     MAX_PAYLOAD_SIZE: int = 1024
     BINANCE_TESTNET_HOST: str = 'wss://testnet.binance.vision'
     SOCKET_PATH: str = "/tmp/unix_socket"
+
+    CONNECTOR: str = 'Binance'
 
     def __init__(self):
         self.symbol: str = 'BTCUSDT'
@@ -87,7 +90,11 @@ class BinanceConnector(object):
     def send_event(channel,
                    event_type: EventType,
                    msg: str):
-        data: Dict = {'t': event_type, 'd': msg}
+        data: Dict = {
+            'connector': BinanceConnector.CONNECTOR,
+            'type': event_type,
+            'data': msg
+        }
         payload: bytes = json.dumps(data).encode('utf-8')
         channel.sendall(payload)
 
