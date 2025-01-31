@@ -3,6 +3,7 @@ import os
 import sqlite3
 from typing import Dict, List
 
+from Binance.data_collect_analyze.BookTick import BookTick
 from Binance.data_collect_analyze.Tick import Tick
 from Binance.data_collect_analyze.Trade import Trade
 
@@ -56,6 +57,20 @@ def create_ticks_table(connection: sqlite3.Connection):
     cursor.close()
 
 
+def create_book_ticks_table(connection: sqlite3.Connection):
+    cursor = connection.cursor()
+    cursor.execute('''CREATE TABLE IF NOT EXISTS book_ticks (
+            update_id INT NOT NULL,
+            symbol TEXT NOT NULL,
+            best_bid_price TEXT NOT NULL,
+            best_bid_quantity TEXT NOT NULL,
+            best_ask_price TEXT NOT NULL,
+            best_ask_quantity TEXT NOT NULL,
+            timestamp TEXT NOT NULL
+            );''')
+    cursor.close()
+
+
 def insert_trade(connection: sqlite3.Connection, trade: Trade):
     statement: str = (f"INSERT INTO trades (time,symbol,trade_id,price,quantity,trade_time,is_buyer,timestamp)"
                       f" VALUES ({trade.time},'{trade.symbol}',{trade.trade_id},'{trade.price}',"
@@ -103,14 +118,44 @@ def process_ticker_data(connection: sqlite3.Connection):
         insert_tick(connection=connection, tick=tick)
 
 
+def insert_book_tick(connection: sqlite3.Connection, book_tick: BookTick):
+    statement: str = (f"INSERT INTO book_ticks (update_id,symbol,best_bid_price,best_bid_quantity,"
+                      f"best_ask_price,best_ask_quantity,timestamp)"
+                      f" VALUES ('{book_tick.update_id}','{book_tick.symbol}','{book_tick.best_bid_price}',"
+                      f"'{book_tick.best_bid_quantity}','{book_tick.best_ask_price}',"
+                      f"'{book_tick.best_ask_quantity}','{book_tick.timestamp}');")
+    cursor = connection.cursor()
+    cursor.execute(statement)
+    connection.commit()
+    cursor.close()
+
+
+def process_book_ticker_data(connection: sqlite3.Connection):
+    book_ticks: List[BookTick] = []
+    with open(f'{data_store_folder}/btcusdt_bookTicker') as book_ticker_file:
+        for book_ticker_str in book_ticker_file:
+            book_ticks.append(BookTick(json.loads(book_ticker_str.replace('\n', ''))))
+
+    for book_ticker in book_ticks:
+        insert_book_tick(connection=connection, book_tick=book_ticker)
+
+
 if __name__ == '__main__':
     # process_trades_data()
 
+    '''
     with sqlite3.connect(f'{db_storage_folder}/binance_data.db') as session:
         create_trades_table(connection=session)
         process_trades_data(connection=session)
+    '''
     '''
     with sqlite3.connect(f'{db_storage_folder}/binance_data.db') as session:
         create_ticks_table(connection=session)
         process_ticker_data(connection=session)
     '''
+
+    with sqlite3.connect(f'{db_storage_folder}/binance_data.db') as session:
+        create_book_ticks_table(connection=session)
+        process_book_ticker_data(connection=session)
+
+
