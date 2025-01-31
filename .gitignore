@@ -3,3 +3,7 @@
 venv/
 private_credentials.ini
 **.pdf**
+
+
+Binance/storage/binance_data.db
+Binance/streams/data/*
