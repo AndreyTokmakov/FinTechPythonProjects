@@ -187,6 +187,10 @@ class BinanceDataCollector(object):
 
         self.db_session: sqlite3.Connection = sqlite3.connect(f'{self.db_storage_folder}/binance_data_1.db')
 
+        DatabaseWorker.create_trades_table(connection=self.db_session)
+        DatabaseWorker.create_ticks_table(connection=self.db_session)
+        DatabaseWorker.create_book_ticks_table(connection=self.db_session)
+
         self.web_socket = websocket.WebSocketApp(f'{self.BINANCE_TESTNET_HOST}/stream',
                                                  on_message=self.on_message,
                                                  on_error=self.on_error,
@@ -196,8 +200,21 @@ class BinanceDataCollector(object):
 
         signal.signal(signal.SIGINT, self.signal_handler)
 
+    # TODO: Implement
     def store_avg_price(self, event: Dict):
         avg_price: AvgPrice = AvgPrice(event)
+
+    def store_trade(self, event: Dict):
+        DatabaseWorker.insert_trade(connection=self.db_session,
+                                    trade=Trade(event))
+
+    def store_tick(self, event: Dict):
+        DatabaseWorker.insert_tick(connection=self.db_session,
+                                   tick=Tick(event))
+
+    def store_book_tick(self, event: Dict):
+        DatabaseWorker.insert_book_tick(connection=self.db_session,
+                                        book_tick=BookTick(event))
 
     def store_event(self,
                     event: Dict):
@@ -206,20 +223,13 @@ class BinanceDataCollector(object):
             if not stream_name or not data:
                 return
             data['timestamp'] = str(datetime.datetime.now())
-
-            print('=' * 180)
-            print(data)
-            stream_name = stream_name.replace('@', '_')
-            event_type: str = data.get('e')
-            print(event_type)
-            print(stream_name)
-            '''
-            if 'avgPrice' == event_type:
-                self.store_avg_price(data)
-            else:
-                sys.stderr.write(event_type + '\n')
-            '''
-            print('=' * 180)
+            stream_type: StreamType = get_stream_type(stream_name)
+            if StreamType.Trade == stream_type:
+                self.store_trade(data)
+            elif StreamType.Tick == stream_type:
+                self.store_tick(data)
+            elif StreamType.BookTick == stream_type:
+                self.store_book_tick(data)
 
         except Exception as exc:
             sys.stderr.write(str(exc))
@@ -255,14 +265,14 @@ class BinanceDataCollector(object):
         subscribe_message: Dict = {
             "method": "SUBSCRIBE",
             "params": [
-                f"{self.symbol.lower()}@miniTicker",
+                # f"{self.symbol.lower()}@depth"
+                # f"{self.symbol.lower()}@avgPrice"
+                # f"{self.symbol.lower()}@miniTicker",
                 f"{self.symbol.lower()}@bookTicker",
                 f"{self.symbol.lower()}@ticker",
-                f"{self.symbol.lower()}@aggTrade",
+                # f"{self.symbol.lower()}@aggTrade",
                 f"{self.symbol.lower()}@trade",
-                f"{self.symbol.lower()}@kline_1000ms",
-                f"{self.symbol.lower()}@depth"
-                f"{self.symbol.lower()}@avgPrice"
+                # f"{self.symbol.lower()}@kline_1000ms",
             ],
             "id": 1
         }
@@ -283,20 +293,5 @@ class BinanceDataCollector(object):
 
 
 if __name__ == '__main__':
-    print(get_stream_type('btcusdt@bookTicker'))
-
-    '''
-    miniTicker
-    bookTicker
-    ticker
-    aggTrade
-    trade
-    kline
-    depth
-    avgPrice
-    '''
-
-    '''
     collector: BinanceDataCollector = BinanceDataCollector()
     collector.start()
-    '''
