@@ -3,6 +3,7 @@ import json
 import os
 import signal
 import sys
+from enum import Enum
 from sqlite3 import Cursor
 
 import websocket
@@ -19,10 +20,50 @@ from Binance.common.AvgPrice import AvgPrice
 from Binance.common.Trade import Trade
 
 
+class StreamType(Enum):
+    Unknown = 0
+    Tick = 1
+    MiniTicker = 2
+    BookTick = 3
+    Trade = 4
+    AggTrade = 5
+    Kline = 6
+    AvgPrice = 7
+    Depth = 8
+
+
+def get_stream_type(stream_str_raw: str) -> StreamType:
+    start: int = stream_str_raw.find('@')
+    if -1 == start:
+        return StreamType.Unknown
+    stream_type: str = stream_str_raw[start + 1:]
+
+    if 'ticker' == stream_type:
+        return StreamType.Tick
+    elif 'miniTicker' == stream_type:
+        return StreamType.MiniTicker
+    elif 'bookTicker' == stream_type:
+        return StreamType.BookTick
+    elif 'trade' == stream_type:
+        return StreamType.Trade
+    elif 'aggTrade' == stream_type:
+        return StreamType.AggTrade
+    elif 'kline' == stream_type:
+        return StreamType.Kline
+    elif 'depth' == stream_type:
+        return StreamType.Depth
+    elif 'avgPrice' == stream_type:
+        return StreamType.AvgPrice
+
+
 class CursorContext(object):
 
-    def __init__(self, connection: sqlite3.Connection) -> None:
-        self.cursor: Cursor = connection.cursor()
+    def __init__(self,
+                 connection: sqlite3.Connection,
+                 commit: bool = False) -> None:
+        self.connection: sqlite3.Connection = connection
+        self.cursor: Cursor = self.connection.cursor()
+        self.commit: bool = commit
 
     def __enter__(self) -> Cursor:
         return self.cursor
@@ -31,6 +72,8 @@ class CursorContext(object):
                  exc_type,
                  exc_val,
                  exc_tb) -> None:
+        if self.commit:
+            self.connection.commit()
         self.cursor.close()
 
 
@@ -99,10 +142,8 @@ class DatabaseWorker(object):
         statement: str = (f"INSERT INTO trades (time,symbol,trade_id,price,quantity,trade_time,is_buyer,timestamp)"
                           f" VALUES ({trade.time},'{trade.symbol}',{trade.trade_id},'{trade.price}',"
                           f"'{trade.quantity}','{trade.trade_time}','{trade.is_buyer}','{trade.timestamp}');")
-        cursor = connection.cursor()
-        cursor.execute(statement)
-        connection.commit()
-        cursor.close()
+        with CursorContext(connection=connection, commit=True) as cursor:
+            cursor.execute(statement)
 
     @staticmethod
     def insert_tick(connection: sqlite3.Connection,
@@ -117,10 +158,8 @@ class DatabaseWorker(object):
                           f"'{tick.open_price}','{tick.high_price}','{tick.low_price}','{tick.total_traded_volume}',"
                           f"'{tick.total_traded_quote_volume}','{tick.statistics_open_time}','{tick.statistics_close_time}',"
                           f"'{tick.first_trade_id}','{tick.last_trade_id}','{tick.number_of_trades}','{tick.timestamp}');")
-        cursor = connection.cursor()
-        cursor.execute(statement)
-        connection.commit()
-        cursor.close()
+        with CursorContext(connection=connection, commit=True) as cursor:
+            cursor.execute(statement)
 
     @staticmethod
     def insert_book_tick(connection: sqlite3.Connection,
@@ -130,10 +169,8 @@ class DatabaseWorker(object):
                           f" VALUES ('{book_tick.update_id}','{book_tick.symbol}','{book_tick.best_bid_price}',"
                           f"'{book_tick.best_bid_quantity}','{book_tick.best_ask_price}',"
                           f"'{book_tick.best_ask_quantity}','{book_tick.timestamp}');")
-        cursor = connection.cursor()
-        cursor.execute(statement)
-        connection.commit()
-        cursor.close()
+        with CursorContext(connection=connection, commit=True) as cursor:
+            cursor.execute(statement)
 
 
 class BinanceDataCollector(object):
@@ -142,11 +179,13 @@ class BinanceDataCollector(object):
 
     def __init__(self):
         self.symbol: str = 'BTCUSDT'
-        self.data_store_folder: str = f'{os.getcwd()}/../storage/raw_data'
+        self.db_storage_folder: str = f'{os.getcwd()}/../storage'
 
         self.message_queue: Queue = Queue()
         self.stop_event: Event = Event()
         self.even_processor: Process = Process(target=self.even_dumper)
+
+        self.db_session: sqlite3.Connection = sqlite3.connect(f'{self.db_storage_folder}/binance_data_1.db')
 
         self.web_socket = websocket.WebSocketApp(f'{self.BINANCE_TESTNET_HOST}/stream',
                                                  on_message=self.on_message,
@@ -157,17 +196,31 @@ class BinanceDataCollector(object):
 
         signal.signal(signal.SIGINT, self.signal_handler)
 
+    def store_avg_price(self, event: Dict):
+        avg_price: AvgPrice = AvgPrice(event)
+
     def store_event(self,
                     event: Dict):
         try:
             stream_name, data = event.get('stream'), event.get('data')
             if not stream_name or not data:
                 return
-
-            stream_name = stream_name.replace('@', '_')
             data['timestamp'] = str(datetime.datetime.now())
-            with open(file=f'{self.data_store_folder}/{stream_name}', mode='a') as file:
-                file.write(json.dumps(data) + '\n')
+
+            print('=' * 180)
+            print(data)
+            stream_name = stream_name.replace('@', '_')
+            event_type: str = data.get('e')
+            print(event_type)
+            print(stream_name)
+            '''
+            if 'avgPrice' == event_type:
+                self.store_avg_price(data)
+            else:
+                sys.stderr.write(event_type + '\n')
+            '''
+            print('=' * 180)
+
         except Exception as exc:
             sys.stderr.write(str(exc))
 
@@ -205,7 +258,7 @@ class BinanceDataCollector(object):
                 f"{self.symbol.lower()}@miniTicker",
                 f"{self.symbol.lower()}@bookTicker",
                 f"{self.symbol.lower()}@ticker",
-                f"{self.symbol.lower()}@@aggTrade",
+                f"{self.symbol.lower()}@aggTrade",
                 f"{self.symbol.lower()}@trade",
                 f"{self.symbol.lower()}@kline_1000ms",
                 f"{self.symbol.lower()}@depth"
@@ -230,14 +283,20 @@ class BinanceDataCollector(object):
 
 
 if __name__ == '__main__':
+    print(get_stream_type('btcusdt@bookTicker'))
+
+    '''
+    miniTicker
+    bookTicker
+    ticker
+    aggTrade
+    trade
+    kline
+    depth
+    avgPrice
+    '''
+
     '''
     collector: BinanceDataCollector = BinanceDataCollector()
     collector.start()
     '''
-
-    db_storage_folder: str = f'{os.getcwd()}/../storage'
-
-    with sqlite3.connect(f'{db_storage_folder}/binance_data_1.db') as session:
-        DatabaseWorker.create_book_ticks_table(connection=session)
-        DatabaseWorker.create_ticks_table(connection=session)
-        DatabaseWorker.create_trades_table(connection=session)
