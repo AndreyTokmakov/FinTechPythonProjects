@@ -1,31 +1,7 @@
-from typing import Dict
+from Binance.common.BaseEvent import BaseEvent
 
 
-class Tick(Dict):
-
-    @property
-    def event_type(self) -> str:
-        return self["e"]
-
-    @event_type.setter
-    def event_type(self, value: str):
-        self["e"] = value
-
-    @property
-    def time(self) -> int:
-        return self["E"]
-
-    @time.setter
-    def time(self, value: int):
-        self["E"] = value
-
-    @property
-    def symbol(self) -> str:
-        return self["s"]
-
-    @symbol.setter
-    def symbol(self, value: str):
-        self["s"] = value
+class Tick(BaseEvent):
 
     @property
     def price_change(self) -> str:
@@ -186,11 +162,3 @@ class Tick(Dict):
     @number_of_trades.setter
     def number_of_trades(self, value: str):
         self["n"] = value
-
-    @property
-    def timestamp(self) -> str:
-        return self["timestamp"]
-
-    @timestamp.setter
-    def timestamp(self, value: str):
-        self["timestamp"] = value

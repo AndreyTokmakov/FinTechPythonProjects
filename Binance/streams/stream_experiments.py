@@ -30,6 +30,7 @@ def on_open(ws):
             # "btcusdt@aggTrade",
             # "btcusdt@trade"
             # "btcusdt@kline_1000ms"
+            "btcusdt@avgPrice"
         ],
         "id": 1
     }

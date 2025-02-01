@@ -3,9 +3,9 @@ import os
 import sqlite3
 from typing import Dict, List
 
-from Binance.data_collect_analyze.BookTick import BookTick
-from Binance.data_collect_analyze.Tick import Tick
-from Binance.data_collect_analyze.Trade import Trade
+from Binance.common.BookTick import BookTick
+from Binance.common.Tick import Tick
+from Binance.common.Trade import Trade
 
 data_store_folder: str = f'{os.getcwd()}/../streams/data'
 db_storage_folder: str = f'{os.getcwd()}/../storage'

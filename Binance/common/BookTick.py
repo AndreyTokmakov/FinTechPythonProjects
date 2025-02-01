@@ -1,6 +1,4 @@
-
-
-from typing import Dict
+from Binance.common.BaseEvent import BaseEvent
 
 '''
 {
@@ -13,7 +11,8 @@ from typing import Dict
 }
 '''
 
-class BookTick(Dict):
+
+class BookTick(BaseEvent):
 
     @property
     def update_id(self) -> str:
@@ -22,14 +21,6 @@ class BookTick(Dict):
     @update_id.setter
     def update_id(self, value: str):
         self["u"] = value
-
-    @property
-    def symbol(self) -> str:
-        return self["s"]
-
-    @symbol.setter
-    def symbol(self, value: str):
-        self["s"] = value
 
     @property
     def best_bid_price(self) -> str:
@@ -63,13 +54,6 @@ class BookTick(Dict):
     def best_ask_quantity(self, value: str):
         self["A"] = value
 
-    @property
-    def timestamp(self) -> str:
-        return self["timestamp"]
-
-    @timestamp.setter
-    def timestamp(self, value: str):
-        self["timestamp"] = value
     '''
     @property
     def time(self) -> int:

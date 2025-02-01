@@ -18,7 +18,7 @@ class BinanceDataCollector(object):
 
     def __init__(self):
         self.symbol: str = 'BTCUSDT'
-        self.data_store_folder: str = f'{os.getcwd()}/data'
+        self.data_store_folder: str = f'{os.getcwd()}/../storage/raw_data'
 
         self.message_queue: Queue = Queue()
         self.stop_event: Event = Event()
@@ -85,6 +85,7 @@ class BinanceDataCollector(object):
                 f"{self.symbol.lower()}@trade",
                 f"{self.symbol.lower()}@kline_1000ms",
                 f"{self.symbol.lower()}@depth"
+                f"{self.symbol.lower()}@avgPrice"
             ],
             "id": 1
         }
