@@ -1,13 +1,3 @@
-
-
-'''
-{
-  "i": "5m",                // Average price interval
-  "w": "25776.86000000",    // Average price
-  "T": 1693907032213        // Last trade time
-'''
-
-
 from typing import Dict
 
 
@@ -44,3 +34,13 @@ class BaseEvent(Dict):
     @timestamp.setter
     def timestamp(self, value: str):
         self["timestamp"] = value
+
+
+'''
+{
+    "e"         // event_type
+    "E"         // time
+    "s"         // symbol
+    "timestamp" // timestamp
+}
+'''

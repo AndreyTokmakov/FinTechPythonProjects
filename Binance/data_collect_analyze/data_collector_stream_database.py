@@ -14,7 +14,9 @@ from queue import Empty
 from typing import Any, Dict
 from websocket import WebSocket
 
+from Binance.common.AggTrade import AggTrade
 from Binance.common.BookTick import BookTick
+from Binance.common.MiniTick import MiniTick
 from Binance.common.Tick import Tick
 from Binance.common.AvgPrice import AvgPrice
 from Binance.common.Trade import Trade
@@ -80,6 +82,52 @@ class CursorContext(object):
 class DatabaseWorker(object):
 
     @staticmethod
+    def create_agg_trades_table(connection: sqlite3.Connection):
+        with CursorContext(connection) as cursor:
+            cursor.execute('''CREATE TABLE IF NOT EXISTS agg_trades (
+                    event_type TEXT NOT NULL,
+                    time INT NOT NULL,
+                    symbol TEXT NOT NULL,
+                    aggregate_trade_id TEXT NOT NULL,
+                    price TEXT NOT NULL,
+                    quantity TEXT NOT NULL,
+                    first_trade_id TEXT NOT NULL,
+                    flast_trade_id TEXT NOT NULL,
+                    trade_time TEXT NOT NULL,
+                    is_buyer TEXT NOT NULL,
+                    timestamp TEXT NOT NULL
+            );''')
+
+    @staticmethod
+    def create_mini_ticks_table(connection: sqlite3.Connection):
+        with CursorContext(connection) as cursor:
+            cursor.execute('''CREATE TABLE IF NOT EXISTS mini_ticks (
+                    event_type TEXT NOT NULL,
+                    time INT NOT NULL,
+                    symbol TEXT NOT NULL,
+                    close_price TEXT NOT NULL,
+                    open_price TEXT NOT NULL,
+                    high_price TEXT NOT NULL,
+                    low_price TEXT NOT NULL,
+                    traded_base_volume TEXT NOT NULL,
+                    traded_quote_volume TEXT NOT NULL,
+                    timestamp TEXT NOT NULL
+            );''')
+
+    @staticmethod
+    def create_avg_price_table(connection: sqlite3.Connection):
+        with CursorContext(connection) as cursor:
+            cursor.execute('''CREATE TABLE IF NOT EXISTS avg_price (
+                    event_type TEXT NOT NULL,
+                    time INT NOT NULL,
+                    symbol TEXT NOT NULL,
+                    price_interval TEXT NOT NULL,
+                    average_price TEXT NOT NULL,
+                    last_trade_time TEXT NOT NULL,
+                    timestamp TEXT NOT NULL
+            );''')
+
+    @staticmethod
     def create_trades_table(connection: sqlite3.Connection):
         with CursorContext(connection) as cursor:
             cursor.execute('''CREATE TABLE IF NOT EXISTS trades (
@@ -91,7 +139,7 @@ class DatabaseWorker(object):
                     trade_time TEXT NOT NULL,
                     is_buyer TEXT NOT NULL,
                     timestamp TEXT NOT NULL
-                    );''')
+            );''')
 
     @staticmethod
     def create_ticks_table(connection: sqlite3.Connection):
@@ -121,7 +169,7 @@ class DatabaseWorker(object):
                     last_trade_id TEXT NOT NULL,
                     number_of_trades TEXT NOT NULL,
                     timestamp TEXT NOT NULL
-                    );''')
+            );''')
 
     @staticmethod
     def create_book_ticks_table(connection: sqlite3.Connection):
@@ -134,7 +182,16 @@ class DatabaseWorker(object):
                     best_ask_price TEXT NOT NULL,
                     best_ask_quantity TEXT NOT NULL,
                     timestamp TEXT NOT NULL
-                    );''')
+            );''')
+
+    @staticmethod
+    def insert_avg_price(connection: sqlite3.Connection,
+                         avg_price: AvgPrice):
+        statement: str = (f"INSERT INTO avg_price (event_type,time,symbol,price_interval,average_price,last_trade_time,timestamp)"
+                          f" VALUES ('{avg_price.event_type}',{avg_price.time},'{avg_price.symbol}','{avg_price.price_interval}',"
+                          f"'{avg_price.average_price}','{avg_price.last_trade_time}','{avg_price.timestamp}');")
+        with CursorContext(connection=connection, commit=True) as cursor:
+            cursor.execute(statement)
 
     @staticmethod
     def insert_trade(connection: sqlite3.Connection,
@@ -172,8 +229,32 @@ class DatabaseWorker(object):
         with CursorContext(connection=connection, commit=True) as cursor:
             cursor.execute(statement)
 
+    @staticmethod
+    def insert_mini_tick(connection: sqlite3.Connection,
+                         mini_tick: MiniTick):
+        statement: str = (f"INSERT INTO mini_ticks (event_type,time,symbol,close_price,open_price,high_price,low_price,"
+                          f"traded_base_volume,traded_quote_volume,timestamp)"
+                          f" VALUES ('{mini_tick.event_type}',{mini_tick.time},'{mini_tick.symbol}','{mini_tick.close_price}',"
+                          f"'{mini_tick.open_price}','{mini_tick.high_price}','{mini_tick.low_price}',"
+                          f"'{mini_tick.traded_base_volume}','{mini_tick.traded_quote_volume}','{mini_tick.timestamp}');")
+        with CursorContext(connection=connection, commit=True) as cursor:
+            cursor.execute(statement)
+
+    @staticmethod
+    def insert_agg_trade(connection: sqlite3.Connection,
+                         agg_trade: AggTrade):
+        statement: str = (f"INSERT INTO agg_trades (event_type,time,symbol,aggregate_trade_id,price,quantity,first_trade_id,"
+                          f"flast_trade_id,trade_time,is_buyer,timestamp)"
+                          f" VALUES ('{agg_trade.event_type}',{agg_trade.time},'{agg_trade.symbol}',"
+                          f"'{agg_trade.aggregate_trade_id}','{agg_trade.price}','{agg_trade.quantity}','{agg_trade.first_trade_id}',"
+                          f"'{agg_trade.flast_trade_id}','{agg_trade.trade_time}','{agg_trade.is_buyer}',"
+                          f"'{agg_trade.timestamp}');")
+        with CursorContext(connection=connection, commit=True) as cursor:
+            cursor.execute(statement)
+
 
 class BinanceDataCollector(object):
+
     MAX_PAYLOAD_SIZE: int = 1024
     BINANCE_TESTNET_HOST: str = 'wss://testnet.binance.vision'
 
@@ -190,6 +271,9 @@ class BinanceDataCollector(object):
         DatabaseWorker.create_trades_table(connection=self.db_session)
         DatabaseWorker.create_ticks_table(connection=self.db_session)
         DatabaseWorker.create_book_ticks_table(connection=self.db_session)
+        DatabaseWorker.create_avg_price_table(connection=self.db_session)
+        DatabaseWorker.create_mini_ticks_table(connection=self.db_session)
+        DatabaseWorker.create_agg_trades_table(connection=self.db_session)
 
         self.web_socket = websocket.WebSocketApp(f'{self.BINANCE_TESTNET_HOST}/stream',
                                                  on_message=self.on_message,
@@ -200,9 +284,13 @@ class BinanceDataCollector(object):
 
         signal.signal(signal.SIGINT, self.signal_handler)
 
-    # TODO: Implement
     def store_avg_price(self, event: Dict):
-        avg_price: AvgPrice = AvgPrice(event)
+        DatabaseWorker.insert_avg_price(connection=self.db_session,
+                                        avg_price=AvgPrice(event))
+
+    def store_agg_trade(self, event: Dict):
+        DatabaseWorker.insert_agg_trade(connection=self.db_session,
+                                        agg_trade=AggTrade(event))
 
     def store_trade(self, event: Dict):
         DatabaseWorker.insert_trade(connection=self.db_session,
@@ -212,25 +300,45 @@ class BinanceDataCollector(object):
         DatabaseWorker.insert_tick(connection=self.db_session,
                                    tick=Tick(event))
 
+    def store_mini_tick(self, event: Dict):
+        DatabaseWorker.insert_mini_tick(connection=self.db_session,
+                                        mini_tick=MiniTick(event))
+
     def store_book_tick(self, event: Dict):
         DatabaseWorker.insert_book_tick(connection=self.db_session,
                                         book_tick=BookTick(event))
 
     def store_event(self,
-                    event: Dict):
+                    stream_name: str,
+                    data: Dict):
+        stream_type: StreamType = get_stream_type(stream_name)
+        data['timestamp'] = str(datetime.datetime.now())
+        if StreamType.Tick == stream_type:
+            self.store_tick(data)
+        elif StreamType.MiniTicker == stream_type:
+            self.store_mini_tick(data)
+        elif StreamType.BookTick == stream_type:
+            self.store_book_tick(data)
+        elif StreamType.Trade == stream_type:
+            self.store_trade(data)
+        elif StreamType.AggTrade == stream_type:
+            self.store_agg_trade(data)
+        elif StreamType.Kline == stream_type:
+            print(stream_type)
+            # TODO: self.store_kline(data)
+        elif StreamType.AvgPrice == stream_type:
+            self.store_avg_price(data)
+        elif StreamType.Depth == stream_type:
+            print(stream_type)
+            # TODO: self.store_depth(data)
+
+    def handle_event(self,
+                     event: Dict):
         try:
             stream_name, data = event.get('stream'), event.get('data')
             if not stream_name or not data:
                 return
-            data['timestamp'] = str(datetime.datetime.now())
-            stream_type: StreamType = get_stream_type(stream_name)
-            if StreamType.Trade == stream_type:
-                self.store_trade(data)
-            elif StreamType.Tick == stream_type:
-                self.store_tick(data)
-            elif StreamType.BookTick == stream_type:
-                self.store_book_tick(data)
-
+            self.store_event(stream_name=stream_name, data=data)
         except Exception as exc:
             sys.stderr.write(str(exc))
 
@@ -238,7 +346,7 @@ class BinanceDataCollector(object):
         while not self.stop_event.is_set():
             try:
                 event: Dict = self.message_queue.get(timeout=0.25)
-                self.store_event(event)
+                self.handle_event(event)
             except Empty:
                 if self.stop_event.is_set():
                     break
@@ -268,10 +376,10 @@ class BinanceDataCollector(object):
                 # f"{self.symbol.lower()}@depth"
                 # f"{self.symbol.lower()}@avgPrice"
                 # f"{self.symbol.lower()}@miniTicker",
-                f"{self.symbol.lower()}@bookTicker",
-                f"{self.symbol.lower()}@ticker",
-                # f"{self.symbol.lower()}@aggTrade",
-                f"{self.symbol.lower()}@trade",
+                # f"{self.symbol.lower()}@bookTicker",
+                # f"{self.symbol.lower()}@ticker",
+                f"{self.symbol.lower()}@aggTrade",
+                # f"{self.symbol.lower()}@trade",
                 # f"{self.symbol.lower()}@kline_1000ms",
             ],
             "id": 1
