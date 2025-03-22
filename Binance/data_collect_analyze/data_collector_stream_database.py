@@ -373,11 +373,11 @@ class BinanceDataCollector(object):
         subscribe_message: Dict = {
             "method": "SUBSCRIBE",
             "params": [
-                # f"{self.symbol.lower()}@depth"
-                # f"{self.symbol.lower()}@avgPrice"
-                # f"{self.symbol.lower()}@miniTicker",
-                # f"{self.symbol.lower()}@bookTicker",
-                # f"{self.symbol.lower()}@ticker",
+                f"{self.symbol.lower()}@depth"
+                f"{self.symbol.lower()}@avgPrice"
+                f"{self.symbol.lower()}@miniTicker",
+                f"{self.symbol.lower()}@bookTicker",
+                f"{self.symbol.lower()}@ticker",
                 f"{self.symbol.lower()}@aggTrade",
                 # f"{self.symbol.lower()}@trade",
                 # f"{self.symbol.lower()}@kline_1000ms",

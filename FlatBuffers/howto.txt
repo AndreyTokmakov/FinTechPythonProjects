@@ -1,0 +1,3 @@
+/home/andtokm/Projects/FlatBuffers/flatbuffers/flatc --version
+
+/home/andtokm/Projects/FlatBuffers/flatbuffers/flatc --python monster.fbs

@@ -1,0 +1,12 @@
+
+namespace messaging;
+
+enum Status:byte { Success = 0, Failure = 1 }
+
+table Message {
+  name:string;
+  id:short;
+  status:Status = Success;
+}
+
+root_type Message;
