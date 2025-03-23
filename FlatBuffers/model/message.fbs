@@ -4,7 +4,7 @@ namespace messaging;
 enum Status:byte { Success = 0, Failure = 1 }
 
 table Message {
-  name:string;
+  text:string;
   id:short;
   status:Status = Success;
 }
