@@ -35,16 +35,22 @@ def print_response(response: Response):
         print(f"Error {response.status_code}")
 
 
-def send_get_request(endpoint: str,
-                     headers: Dict = None,
-                     params: Dict = None):
+def get_request(endpoint: str,
+                headers: Dict = None,
+                params: Dict = None) -> Response:
     if not headers:
         headers = default_headers
     if not params:
         params = {}
-    response: Response = requests.get(url=f'{TESTNET_API_HOST}/{endpoint}',
-                                      headers=headers,
-                                      params=params)
+    return requests.get(url=f'{TESTNET_API_HOST}/{endpoint}',
+                        headers=headers,
+                        params=params)
+
+
+def send_get_request(endpoint: str,
+                     headers: Dict = None,
+                     params: Dict = None):
+    response: Response = get_request(endpoint=endpoint, headers=headers, params=params)
     print_response(response)
 
 
@@ -57,7 +63,26 @@ def get_time():
 
 
 def exchange_info():
-    send_get_request('v3/exchangeInfo')
+    response: Response = get_request(endpoint='v3/exchangeInfo')
+    if HTTPStatus.OK == response.status_code:  # HTTP_OK
+        content_type: str = response.headers.get(HTTPHeader.ContentType)
+        if content_type and 'application/json' in content_type:
+            data: Dict = response.json()
+            print(data)
+
+
+def exchange_info_get_symbol__usdt():
+    response: Response = get_request(endpoint='v3/exchangeInfo')
+    if HTTPStatus.OK == response.status_code:  # HTTP_OK
+        content_type: str = response.headers.get(HTTPHeader.ContentType)
+        if content_type and 'application/json' in content_type:
+            data: Dict = response.json()
+            symbols = data.get('symbols')
+            for symbol in symbols:
+                params: Dict = dict(symbol)
+                symbol_name: str = params['symbol']
+                if symbol_name.endswith('USDT'):
+                    print(symbol_name)
 
 
 # Order book
@@ -119,7 +144,8 @@ if __name__ == '__main__':
     # ping()
     # get_time()
     # exchange_info()
-    get_depth()
+    exchange_info_get_symbol__usdt()
+    # get_depth()
     # get_trades()
     # get_average_price()
     # get_ticker_24_hour()
@@ -128,4 +154,3 @@ if __name__ == '__main__':
     # get_ticker_best_book()
 
     # get_open_orders(timestamp=int(time.time_ns() / 1000))
-

@@ -3,6 +3,3 @@
 /home/andtokm/Projects/FlatBuffers/flatbuffers/flatc --python monster.fbs
 /home/andtokm/DiskS/ProjectsUbuntu/Flatbuffers/flatbuffers/flatc --python message.fbs
 
-
-
-

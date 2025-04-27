@@ -7,7 +7,7 @@ stream_url: str = f'{testnet_ws_host}/stream'
 
 def on_message(ws, message):
     data = json.loads(message)
-    print(data)
+    print(str(data).replace('\'', '\"'))
 
 
 def on_error(ws, error):
@@ -21,12 +21,20 @@ def on_close(ws, close_status_code, close_msg):
 def on_open(ws):
     subscribe_message = {
         "method": "SUBSCRIBE",
-        "params": [
-            "btcusdt@miniTicker",
-            "btcusdt@ticker",
-            "btcusdt@aggTrade",
-            "btcusdt@depth",
-            "btcusdt@trade"
+        "params":
+        [
+            # "ethusdt@ticker",
+            # "btcusdt@ticker",
+            # "xrpusdt@ticker",
+            # "btcusdt@miniTicker",
+            # "btcusdt@ticker",
+            # "btcusdt@aggTrade",
+            "btcusdt@depth",               # depthUpdate
+            # "btcusdt@trade"
+            # "btcusdt@bookTicker"
+
+            # "btcusdt@indexPrice"
+            # "btcusdt@markPrice"
         ],
         "id": 1
     }
@@ -34,13 +42,13 @@ def on_open(ws):
 
 
 def on_ping(ws, message):
-    print('=' * 90, ' PING ', '-' * 90)
+    #print('=' * 90, ' PING ', '-' * 90)
     ws.send(message, websocket.ABNF.OPCODE_PONG)
-    print('=' * 186)
+    # print('=' * 186)
 
 
 if __name__ == "__main__":
-    websocket.enableTrace(True)
+    # websocket.enableTrace(True)
     web_socket = websocket.WebSocketApp(stream_url,
                                         on_message=on_message,
                                         on_error=on_error,

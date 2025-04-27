@@ -7,11 +7,15 @@ stream_url: str = f'{testnet_ws_host}/stream'
 
 def on_message(ws, message):
     data = json.loads(message)
+
+    print(str(data).replace('\'', '\"'))
+    '''
     if 'stream' in data:
         # you can pipeline this data to your function, analysis or backtesting
         print(f"Symbol: {data['data']['s']}, Price: {data['data']['c']}, Time: {data['data']['E']}")
     else:
         print(f"Received message: {message}")
+    '''
 
 
 def on_error(ws, error):
@@ -26,8 +30,13 @@ def on_open(ws):
     subscribe_message = {
         "method": "SUBSCRIBE",
         "params": [
+            "ethusdt@ticker",
             "btcusdt@ticker",
-            # "btcusdt@bookTicker"
+            "xrpusdt@ticker",
+            "bnbusdt@ticker",
+            "pythusdt@ticker",
+            "memeusdt@ticker",
+            "tstusdt@ticker",
         ],
         "id": 1
     }
