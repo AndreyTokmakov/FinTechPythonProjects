@@ -1,7 +1,7 @@
 import websocket
 import json
 
-testnet_ws_host: str = 'wss://testnet.binance.vision'
+testnet_ws_host: str = 'wss://stream.binance.com'
 stream_url: str = f'{testnet_ws_host}/stream'
 
 
@@ -21,20 +21,8 @@ def on_close(ws, close_status_code, close_msg):
 def on_open(ws):
     subscribe_message = {
         "method": "SUBSCRIBE",
-        "params":
-        [
-            # "ethusdt@ticker",
-            # "btcusdt@ticker",
-            # "xrpusdt@ticker",
-            # "btcusdt@miniTicker",
-            # "btcusdt@ticker",
-            # "btcusdt@aggTrade",
-            "btcusdt@depth",               # depthUpdate
-            # "btcusdt@trade"
-            # "btcusdt@bookTicker"
-
-            # "btcusdt@indexPrice"
-            # "btcusdt@markPrice"
+        "params":[
+            "btcusdt@depth",
         ],
         "id": 1
     }
@@ -42,9 +30,10 @@ def on_open(ws):
 
 
 def on_ping(ws, message):
-    #print('=' * 90, ' PING ', '-' * 90)
+    print('=' * 90, ' PING ', '-' * 90)
+    print(message)
     ws.send(message, websocket.ABNF.OPCODE_PONG)
-    # print('=' * 186)
+    print('=' * 186)
 
 
 if __name__ == "__main__":

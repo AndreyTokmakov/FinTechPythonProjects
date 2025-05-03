@@ -6,6 +6,6 @@ private_credentials.ini
 
 
 Binance/storage/*
-Binance/streams/data/*
+Binance/streams_testnet/data/*
 FlatBuffers/model/messaging/*
 private_credentials.conf
