@@ -4,7 +4,8 @@ import time
 import requests
 from http import HTTPStatus
 from requests import Response
-from TestNetworkServices.common.HTTPHeader import HTTPHeader
+
+from common.HTTPHeader import HTTPHeader
 
 url: str = 'http://0.0.0.0:8080/'
 endpoint: str = 'public'

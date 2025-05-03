@@ -1,7 +1,8 @@
 
 import uvicorn
 from fastapi import FastAPI, APIRouter
-from utilities.Utilities import Utilities
+
+from common.Utilities import Utilities
 
 
 class APIServer(object):

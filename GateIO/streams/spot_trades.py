@@ -1,10 +1,10 @@
 import logging
-from GateIO.credentials import Credentials, read_credentials
+from credentials.credentials import GateIoConfiguration, Credentials
 from GateIO.streams.GateIOWebSocketClient import GateIOWebSocketClient
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
-creds: Credentials = read_credentials()
+creds: Credentials = GateIoConfiguration.read_credentials()
 
 
 def on_message(ws: GateIOWebSocketClient, message: str):

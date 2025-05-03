@@ -4,10 +4,11 @@ import hashlib
 import hmac
 import six
 from typing import Dict
-from GateIO.credentials import Credentials, read_credentials, read_credentials_testnet
 
-creds: Credentials = read_credentials()
-test_net_creds: Credentials = read_credentials_testnet()
+from credentials.credentials import GateIoConfiguration, Credentials
+
+creds: Credentials = GateIoConfiguration.read_credentials()
+test_net_creds: Credentials = GateIoConfiguration.read_credentials_testnet()
 
 
 def __get_sing__(credentials: Credentials, method, url, query_string=None, payload_string=None):
@@ -24,7 +25,7 @@ def __get_sing__(credentials: Credentials, method, url, query_string=None, paylo
     print(s)
     print(s.encode('utf-8'))
     signature = hmac.new(credentials.api_secret.encode('utf-8'), s.encode('utf-8'), hashlib.sha512).hexdigest()
-    headers =  {
+    headers = {
         'KEY': credentials.api_key,
         'Timestamp': str(timestamp),
         'SIGN': signature
@@ -32,6 +33,7 @@ def __get_sing__(credentials: Credentials, method, url, query_string=None, paylo
 
     print(headers)
     return headers
+
 
 def __generate_signature__(credentials: Credentials,
                            method: str,
@@ -63,6 +65,7 @@ def __generate_signature__(credentials: Credentials,
         'SIGN': signature
     }
 
+
 def generate_signature(method: str,
                        url: str,
                        query_string=None,
@@ -72,6 +75,7 @@ def generate_signature(method: str,
                                   url=url,
                                   query_string=query_string,
                                   payload_string=payload_string)
+
 
 def generate_signature_testnet(method: str,
                                url: str,

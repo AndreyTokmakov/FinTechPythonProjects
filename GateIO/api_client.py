@@ -4,8 +4,8 @@ import json
 from copy import copy
 from requests import Response
 from typing import Dict
-from GateIO.common.HTTPHeader import HTTPHeader
 from GateIO.signature import generate_signature, generate_signature_testnet
+from common.HTTPHeader import HTTPHeader
 
 prefix: str = "/api/v4"
 

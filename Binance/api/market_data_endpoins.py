@@ -8,7 +8,7 @@ from typing import Dict, List
 from requests import Response
 
 from Binance.api.api_keys import get_api_key, get_params_with_signature
-from Binance.api.common import HTTPHeader
+from common.HTTPHeader import HTTPHeader
 
 TESTNET_API_HOST: str = 'https://testnet.binance.vision/api'
 TESTNET_WS_HOST: str = 'wss://testnet.binance.vision/ws'

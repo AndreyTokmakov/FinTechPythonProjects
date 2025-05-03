@@ -1,7 +1,7 @@
 
 import logging
 
-from Credentials.credentials import GateIoConfiguration, Credentials
+from credentials.credentials import GateIoConfiguration, Credentials
 from GateIO.streams.GateIOWebSocketClient import GateIOWebSocketClient
 
 creds: Credentials = GateIoConfiguration.read_credentials()

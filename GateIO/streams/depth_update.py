@@ -8,6 +8,7 @@ def on_message(ws, message):
     data = json.loads(message)
     print(data)
 
+
 def on_error(ws, error):
     print(f"Error: {error}")
 
@@ -18,9 +19,9 @@ def on_close(ws, close_status_code, close_msg):
 
 def on_open(ws):
     subscribe_message = {
-        "id":12312,
-        "method":"depth.query",
-        "params":["BTC_USDT", 5, "1"]
+        "id": 12312,
+        "method": "depth.query",
+        "params": ["BTC_USDT", 5, "1"]
     }
     ws.send(json.dumps(subscribe_message))
 

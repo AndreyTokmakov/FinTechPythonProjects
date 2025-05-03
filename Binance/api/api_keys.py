@@ -1,8 +1,10 @@
 import base64
 import time
 from typing import Dict
-
+from credentials.credentials import Credentials, BinanceConfiguration
 from cryptography.hazmat.primitives.serialization import load_pem_private_key
+
+creds: Credentials = BinanceConfiguration.read_credentials()
 
 # Set up authentication
 API_KEY: str = '9FmOZl0CCPVkzipOv0kXMx0gaL1BSeCuUhzG0CKilr0yjS6mxf037UvqM2nhAuXf'
@@ -10,7 +12,7 @@ PRIVATE_KEY_PATH: str = '/home/andtokm/Documents/Binance/ssh_Key/ed25519.pem'
 
 
 def get_api_key() -> str:
-    return API_KEY
+    return creds.api_key
 
 
 def get_private_key(path: str = PRIVATE_KEY_PATH):
