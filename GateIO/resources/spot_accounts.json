@@ -1,0 +1,20 @@
+[
+    {
+        "currency": "ETH",
+        "available": "968.8",
+        "locked": "0",
+        "update_id": 98
+    },
+    {
+        "currency": "BTC",
+        "available": "0.04",
+        "locked": "0",
+        "update_id": 98
+    },
+    {
+        "currency": "USDT",
+        "available": "1234.85",
+        "locked": "0",
+        "update_id": 98
+    }
+]

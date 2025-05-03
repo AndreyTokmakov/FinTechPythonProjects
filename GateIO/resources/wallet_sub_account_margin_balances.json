@@ -1,0 +1,26 @@
+[
+  {
+    "uid": "10000",
+    "available": [
+      {
+        "locked": false,
+        "currency_pair": "BTC_USDT",
+        "risk": "9999.99",
+        "base": {
+          "available": "0.1",
+          "borrowed": "0",
+          "interest": "0",
+          "currency": "BTC",
+          "locked": "0"
+        },
+        "quote": {
+          "available": "0",
+          "borrowed": "0",
+          "interest": "0",
+          "currency": "USDT",
+          "locked": "0"
+        }
+      }
+    ]
+  }
+]

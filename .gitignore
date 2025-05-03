@@ -8,3 +8,4 @@ private_credentials.ini
 Binance/storage/*
 Binance/streams/data/*
 FlatBuffers/model/messaging/*
+private_credentials.conf

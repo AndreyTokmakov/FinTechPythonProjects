@@ -1,0 +1,1 @@
+https://www.gate.io/docs/developers/apiv4/ws/en/#server-notification-4

@@ -1,0 +1,33 @@
+[
+    {
+        "uid": "100000",
+        "available":
+        {
+            "user_id": 100003,
+            "locked": false,
+            "total": "20.000000",
+            "borrowed": "0.000000",
+            "interest": "0",
+            "borrowed_net": "0",
+            "net": "20",
+            "leverage": "3",
+            "risk": "9999.99",
+            "total_initial_margin": "0.00",
+            "total_margin_balance": "20.00",
+            "total_maintenance_margin": "0.00",
+            "total_initial_margin_rate": "9999.9900",
+            "total_maintenance_margin_rate": "9999.9900",
+            "total_available_margin": "20.00",
+            "balances":
+            {
+                "USDT":
+                {
+                    "available": "20.000000",
+                    "freeze": "0.000000",
+                    "borrowed": "0.000000",
+                    "interest": "0.000000"
+                }
+            }
+        }
+    }
+]
