@@ -6,16 +6,12 @@ from cryptography.hazmat.primitives.serialization import load_pem_private_key
 
 creds: Credentials = BinanceConfiguration.read_credentials()
 
-# Set up authentication
-API_KEY: str = '9FmOZl0CCPVkzipOv0kXMx0gaL1BSeCuUhzG0CKilr0yjS6mxf037UvqM2nhAuXf'
-PRIVATE_KEY_PATH: str = '/home/andtokm/Documents/Binance/ssh_Key/ed25519.pem'
-
 
 def get_api_key() -> str:
     return creds.api_key
 
 
-def get_private_key(path: str = PRIVATE_KEY_PATH):
+def get_private_key(path: str = creds.private_key_path):
     with open(file=path, mode='rb') as file:
         return load_pem_private_key(data=file.read(), password=None)
 
