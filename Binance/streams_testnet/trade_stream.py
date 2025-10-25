@@ -2,6 +2,7 @@ import websocket
 import json
 
 testnet_ws_host: str = 'wss://testnet.binance.vision'
+testnet_ws_host: str = 'wss://fstream.binance.com'
 stream_url: str = f'{testnet_ws_host}/stream'
 
 

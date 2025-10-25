@@ -2,7 +2,8 @@ import websocket
 import json
 
 testnet_ws_host: str = 'wss://testnet.binance.vision'
-stream_url: str = f'{testnet_ws_host}/stream'
+real_ws_host: str = 'wss://fstream.binance.com'
+stream_url: str = f'{real_ws_host}/stream'
 
 
 def on_message(ws, message):
@@ -32,7 +33,6 @@ def on_open(ws):
             "btcusdt@depth",               # depthUpdate
             # "btcusdt@trade"
             # "btcusdt@bookTicker"
-
             # "btcusdt@indexPrice"
             # "btcusdt@markPrice"
         ],
