@@ -1,7 +1,18 @@
+import random
 import socket
+import string
 import threading
 import logging
 import time
+import json
+
+letters = string.ascii_letters + string.digits + string.hexdigits
+
+
+def generate_random_string(max_len: int):
+    rand_len: int = random.randrange(0, max_len, 32)
+    return ''.join(random.choice(letters) for i in range(rand_len))
+
 
 # Configure logging
 logging.basicConfig(
@@ -22,9 +33,11 @@ def handle_client(conn, addr):
             n: int = 0
             while True:
                 n = n + 1
-                response: str = f'Market Data - {n}'
+                response: str = json.dumps({
+                    'id': n, 'data': generate_random_string(10 * 1024)
+                })
                 conn.sendall(response.encode())
-                time.sleep(0.1)
+                # time.sleep(0.001)
     except Exception as exc:
         logging.info(f'{exc}')
 
