@@ -14,6 +14,11 @@ def generate_random_string(max_len: int):
     return ''.join(random.choice(letters) for i in range(rand_len))
 
 
+data: str = generate_random_string(10 * 1024)
+response_static: str = json.dumps({
+    'id': 1, 'data': data
+})
+
 # Configure logging
 logging.basicConfig(
     level=logging.INFO,
@@ -33,11 +38,11 @@ def handle_client(conn, addr):
             n: int = 0
             while True:
                 n = n + 1
-                response: str = json.dumps({
+                '''response: str = json.dumps({
                     'id': n, 'data': generate_random_string(10 * 1024)
-                })
-                conn.sendall(response.encode())
-                # time.sleep(0.001)
+                })'''
+                conn.sendall(response_static.encode())
+                time.sleep(0.001)
     except Exception as exc:
         logging.info(f'{exc}')
 
