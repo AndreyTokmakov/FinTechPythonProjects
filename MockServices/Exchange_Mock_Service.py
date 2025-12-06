@@ -42,7 +42,7 @@ def handle_client(conn, addr):
                     'id': n, 'data': generate_random_string(10 * 1024)
                 })'''
                 conn.sendall(response_static.encode())
-                time.sleep(0.001)
+                time.sleep(0.00001)
     except Exception as exc:
         logging.info(f'{exc}')
 
